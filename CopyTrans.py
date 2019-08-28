@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 #==================================================================================================
-# Created by    : LGE
 # Filename      : CopyTrans.py
 # Author        : seongmock
 # Created On    : 2019-08-28 14:39
