@@ -49,6 +49,8 @@ if __name__ == "__main__":
 
             LABEL = tkinter.Label(window, text=trans_text, padx=20, pady=20);
             LABEL.pack();
+            window.attributes("-topmost", True)
+            window.attributes("-topmost", False)
             window.update()
 
             prv_text = text;
