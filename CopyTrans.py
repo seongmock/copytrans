@@ -11,20 +11,30 @@
 #==================================================================================================
 #
 #
-
+import re
 import clipboard;
 import time;
-import tkinter;
+import tkinter as tk;
 from googletrans import Translator;
-import threading
+import requests
+from bs4 import BeautifulSoup
 
-window = tkinter.Tk();
-label_txt = tkinter.StringVar();
-label_txt.set("Google Translate");
-# tkinter.Label(window, text="Maximum 가로길이(글자수)").grid(row=0);
-# tkinter.Entry(window).grid(row=0, column=1)l
-LABEL = tkinter.Label(window, textvariable=label_txt, padx=20, pady=20);
-LABEL.pack();
+
+
+
+window    = tk.Tk();
+
+
+org_txt   = tk.StringVar();
+trans_txt = tk.StringVar();
+org_txt.set("Google Translate");
+trans_txt.set("Google Translate");
+
+org_label   = tk.Label(window, textvariable=org_txt, padx=20, pady=15);
+org_label.pack()
+trans_label = tk.Label(window, textvariable=trans_txt, padx=20, pady=15,
+                        font='굴림 11 bold');
+trans_label.pack(side="bottom");
 prv_text="";
 
 
@@ -47,16 +57,35 @@ def GoogleTrans(text):
     translator = Translator();
     trans_text = translator.translate(text, dest='ko').text;
     return trans_text;
+
+def search_daum_dic(query_keyword):
+    dic_url = """http://dic.daum.net/search.do?q={0}"""
+    r = requests.get(dic_url.format(query_keyword))
+    soup = BeautifulSoup(r.text, "html.parser")
+    result_means = soup.find_all(attrs={'class':'list_search'})
+    text = result_means[0].get_text().strip()
+    return text
+
+def set_google_trans(text):
+    trans_text = GoogleTrans(text);
+    trans_text = CutLongString(trans_text);
+    org_txt.set(text);
+    trans_txt.set(trans_text);
+
+def set_dict(text):
+    trans_text = search_daum_dic(text);
+    org_txt.set(text);
+    trans_txt.set(trans_text);
     
 def GetClip():
-    # print("Function CAll");
-    global window, prv_text,label_txt;
+    global window, prv_text,trans_txt;
     text = clipboard.paste();
     if(prv_text!=text) :
-        # print(text);
-        trans_text = GoogleTrans(text);
-        trans_text = CutLongString(trans_text);
-        label_txt.set(trans_text);
+        text=text.strip()
+        if( re.search("\s",text) ):
+            set_google_trans(text);
+        else:
+            set_dict(text)
         
         window.attributes("-topmost", True)
         window.attributes("-topmost", False)
