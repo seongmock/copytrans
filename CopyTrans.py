@@ -69,7 +69,7 @@ def search_daum_dic(query_keyword):
 def set_google_trans(text):
     trans_text = GoogleTrans(text);
     trans_text = CutLongString(trans_text);
-    org_txt.set(text);
+    org_txt.set(CutLongString(text));
     trans_txt.set(trans_text);
 
 def set_dict(text):
