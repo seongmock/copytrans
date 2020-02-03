@@ -53,9 +53,9 @@ def CutLongString(text):
 
     return new_line;
 
-def GoogleTrans(text):
+def GoogleTrans(text, dest):
     translator = Translator();
-    trans_text = translator.translate(text, dest='ko').text;
+    trans_text = translator.translate(text, dest=dest).text;
     return trans_text;
 
 def search_daum_dic(query_keyword):
@@ -67,7 +67,8 @@ def search_daum_dic(query_keyword):
     return text
 
 def set_google_trans(text):
-    trans_text = GoogleTrans(text);
+    trans_text = GoogleTrans(text, 'ja');
+    trans_text = GoogleTrans(text, 'ko');
     trans_text = CutLongString(trans_text);
     org_txt.set(CutLongString(text));
     trans_txt.set(trans_text);
@@ -81,16 +82,19 @@ def GetClip():
     global window, prv_text,trans_txt;
     text = clipboard.paste();
     if(prv_text!=text) :
-        text=text.strip()
-        if( re.search("\s",text) ):
-            set_google_trans(text);
-        else:
-            set_dict(text)
-        
-        window.attributes("-topmost", True)
-        window.attributes("-topmost", False)
-        window.update() 
-        window.deiconify()
+        try:
+            text=text.strip()
+            if( re.search("\s",text) ):
+                set_google_trans(text);
+            else:
+                set_dict(text)
+            
+            window.attributes("-topmost", True)
+            window.attributes("-topmost", False)
+            window.update() 
+            window.deiconify()
+        except:
+            print("Error ");
 
         prv_text = text;
     window.after(500, GetClip);
