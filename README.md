@@ -26,5 +26,6 @@ CopyTrans는 간단한 파이썬 스크립트로 수행되고 있는 도중에 �
 
 ## History
 
+* Add Seach Box
 * Daum Dictionary Search Added
 * Initaial Upload
