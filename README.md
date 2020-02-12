@@ -15,7 +15,7 @@ CopyTrans는 간단한 파이썬 스크립트로 수행되고 있는 도중에 �
 ### Others
 
 * python3
-* pip module: clipboard, googletrans, beautifulsoup4, requests
+* pip module: pyperclip, googletrans, beautifulsoup4, requests
 
 ## 사용방법
 

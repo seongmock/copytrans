@@ -12,7 +12,7 @@
 #
 #
 import re
-import clipboard
+import pyperclip
 import time
 import tkinter as tk
 from googletrans import Translator
@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 
 
 def my_search(event=None):
-    clipboard.copy(search.get())
+    pyperclip.copy(search.get())
 
 
 def CutLongString(text):
@@ -56,7 +56,7 @@ def search_daum_dic(query_keyword):
 
 
 def set_google_trans(text):
-    trans_text = GoogleTrans(text, 'ja')
+    # trans_text = GoogleTrans(text, 'ja')
     trans_text = GoogleTrans(text, 'ko')
     trans_text = CutLongString(trans_text)
     org_txt.set(CutLongString(text))
@@ -84,12 +84,13 @@ bottom_frame.pack(side="bottom")
 tk.Label(top_frame, text="Seach :").pack(side='left')
 search = tk.Entry(top_frame, width=30)
 search.pack(side='left')
-search_bt = tk.Button(top_frame, text="search", padx=3, pady=0, command=my_search)
+search_bt = tk.Button(top_frame, text="search", padx=3,
+                      pady=0, command=my_search)
 search_bt.pack(side='left')
 search.bind('<Return>', my_search)
 
 
-org_label = tk.Label(bottom_frame, textvariable=org_txt, padx=20, pady=15)
+org_label = tk.Label(bottom_frame, textvariable=org_txt,padx=20, pady=15)
 org_label.pack()
 trans_label = tk.Label(bottom_frame, textvariable=trans_txt, padx=20, pady=15,
                        font='굴림 11 bold')
@@ -99,7 +100,7 @@ prv_text = ""
 
 def GetClip():
     global window, prv_text, trans_txt
-    text = clipboard.paste()
+    text = pyperclip.paste()
     if(prv_text != text):
         try:
             text = text.strip()
@@ -107,11 +108,13 @@ def GetClip():
                 set_google_trans(text)
             else:
                 set_dict(text)
-
-            window.attributes("-topmost", True)
-            window.attributes("-topmost", False)
+                
             window.update()
             window.deiconify()
+            window.attributes("-topmost", True)
+            window.attributes("-topmost", False)
+            
+            
         except:
             print("Error ")
 
