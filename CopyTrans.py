@@ -15,6 +15,8 @@ import re
 import pyperclip
 import time
 import tkinter as tk
+from html import escape
+import pypapago
 from googletrans import Translator
 import requests
 from bs4 import BeautifulSoup
@@ -40,8 +42,16 @@ def CutLongString(text):
     return new_line
 
 
+def GoogleTrans2(text, dest):
+    return "none"
+
+def papago(text, dest):
+    translator = pypapago.Translator()
+    result = translator.translate(text, source='en', target=dest)
+    return result
+
 def GoogleTrans(text, dest):
-    translator = Translator()
+    translator = Translator(service_urls=['translate.google.com'])
     trans_text = translator.translate(text, dest=dest).text
     return trans_text
 
@@ -55,9 +65,11 @@ def search_daum_dic(query_keyword):
     return text
 
 
-def set_google_trans(text):
+def set_trans(text):
     # trans_text = GoogleTrans(text, 'ja')
-    trans_text = GoogleTrans(text, 'ko')
+    # trans_text = GoogleTrans(text, 'ko')
+    # trans_text = GoogleTrans2(text, 'ko')
+    trans_text = papago(text, 'ko')
     trans_text = CutLongString(trans_text)
     org_txt.set(CutLongString(text))
     trans_txt.set(trans_text)
@@ -90,7 +102,7 @@ search_bt.pack(side='left')
 search.bind('<Return>', my_search)
 
 
-org_label = tk.Label(bottom_frame, textvariable=org_txt,padx=20, pady=15)
+org_label = tk.Label(bottom_frame, textvariable=org_txt, padx=20, pady=15)
 org_label.pack()
 trans_label = tk.Label(bottom_frame, textvariable=trans_txt, padx=20, pady=15,
                        font='굴림 11 bold')
@@ -105,16 +117,15 @@ def GetClip():
         try:
             text = text.strip()
             if(re.search("\s", text)):
-                set_google_trans(text)
+                set_trans(text)
             else:
                 set_dict(text)
-                
+
             window.update()
             window.deiconify()
             window.attributes("-topmost", True)
             window.attributes("-topmost", False)
-            
-            
+
         except:
             print("Error ")
 
