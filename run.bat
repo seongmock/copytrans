@@ -1,2 +1,1 @@
-
-python.exe CopyTrans.py
+python CopyTrans.py
