@@ -11,14 +11,15 @@
 # ==================================================================================================
 #
 #
+# import sys
 import re
 import pyperclip
 import time
 import tkinter as tk
 from html import escape
-import pypapago
-from googletrans import Translator
-import requests
+from pypapago import Translator
+# from googletrans import Translator
+from requests import get
 from bs4 import BeautifulSoup
 
 
@@ -26,13 +27,13 @@ def my_search(event=None):
     pyperclip.copy(search.get())
 
 
-def CutLongString(text):
+def CutLongString(text, mylen=100):
     cnt = 0
     new_line = ""
     for char in text:
         if(char == '\n'):
             cnt = 0
-        elif(cnt == 100):
+        elif(cnt == mylen):
             cnt = 0
             new_line = new_line + '\n'
         else:
@@ -42,23 +43,24 @@ def CutLongString(text):
     return new_line
 
 
-def GoogleTrans2(text, dest):
-    return "none"
+# def GoogleTrans2(text, dest):
+#     return "none"
 
 def papago(text, dest):
-    translator = pypapago.Translator()
+    # translator = pypapago.Translator()
+    translator = Translator()
     result = translator.translate(text, source='en', target=dest)
     return result
 
-def GoogleTrans(text, dest):
-    translator = Translator(service_urls=['translate.google.com'])
-    trans_text = translator.translate(text, dest=dest).text
-    return trans_text
+# def GoogleTrans(text, dest):
+#     translator = Translator(service_urls=['translate.google.com'])
+#     trans_text = translator.translate(text, dest=dest).text
+#     return trans_text
 
 
 def search_daum_dic(query_keyword):
     dic_url = """http://dic.daum.net/search.do?q={0}"""
-    r = requests.get(dic_url.format(query_keyword))
+    r = get(dic_url.format(query_keyword))
     soup = BeautifulSoup(r.text, "html.parser")
     result_means = soup.find_all(attrs={'class': 'list_search'})
     text = result_means[0].get_text().strip()
@@ -70,8 +72,8 @@ def set_trans(text):
     # trans_text = GoogleTrans(text, 'ko')
     # trans_text = GoogleTrans2(text, 'ko')
     trans_text = papago(text, 'ko')
-    trans_text = CutLongString(trans_text)
-    org_txt.set(CutLongString(text))
+    trans_text = CutLongString(trans_text, 50)
+    org_txt.set(CutLongString(re.sub('\\\"', '\"', text)))
     trans_txt.set(trans_text)
 
 
@@ -109,13 +111,18 @@ trans_label = tk.Label(bottom_frame, textvariable=trans_txt, padx=20, pady=15,
 trans_label.pack(side="bottom")
 prv_text = ""
 
+myre= re.compile(r'[^A-Za-z0-9가-힣\'\"\(\)\[\]\{\}\,\.\/\:\?\!\~\`\*\&\^\%\$\#\@\-\_\=\+\<\>\\\| \t]')
 
 def GetClip():
     global window, prv_text, trans_txt
     text = pyperclip.paste()
     if(prv_text != text):
+        prv_text = text
         try:
             text = text.strip()
+            text = re.sub('\n', ' ', text)
+            text = re.sub('\"', '\\\"', text)
+            text = myre.sub('', text)
             if(re.search("\s", text)):
                 set_trans(text)
             else:
@@ -127,9 +134,11 @@ def GetClip():
             window.attributes("-topmost", False)
 
         except:
-            print("Error ")
+            # print("Unexpected error:", sys.exc_info()[0])
+            print("Error")
+            # raise
 
-        prv_text = text
+        
     window.after(500, GetClip)
 
 
