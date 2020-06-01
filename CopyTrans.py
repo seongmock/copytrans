@@ -21,10 +21,13 @@ from pypapago import Translator
 # from googletrans import Translator
 from requests import get
 from bs4 import BeautifulSoup
+import webbrowser
 
+def callback(url):
+    webbrowser.open_new(url)
 
 def my_search(event=None):
-    pyperclip.copy(search.get())
+    pyperclip.copy(search_entry.get())
 
 
 def CutLongString(text, mylen=100):
@@ -73,42 +76,64 @@ def set_trans(text):
     # trans_text = GoogleTrans2(text, 'ko')
     trans_text = papago(text, 'ko')
     trans_text = CutLongString(trans_text, 50)
+
+    search_entry.delete(0, 'end')
+    search_entry.insert(0, text)
     org_txt.set(CutLongString(re.sub('\\\"', '\"', text)))
     trans_txt.set(trans_text)
 
 
 def set_dict(text):
     trans_text = search_daum_dic(text)
+    search_entry.delete(0, 'end')
+    search_entry.insert(0, text)
     org_txt.set(text)
     trans_txt.set(trans_text)
 
 
-window = tk.Tk()
-org_txt = tk.StringVar()
-trans_txt = tk.StringVar()
-org_txt.set("Google Translate")
-trans_txt.set("Google Translate")
+window    = tk.Tk()
+org_txt   = tk.StringVar(value="Google Translate")
+trans_txt = tk.StringVar(value="Google Translate")
 
-top_frame = tk.Frame(window, pady=10)
+top_frame    = tk.Frame(window, pady=10)
 bottom_frame = tk.Frame(window)
+link_frame   = tk.Frame(window)
 
-top_frame.pack()
-bottom_frame.pack(side="bottom")
-
+#TOP Frame Entity
 tk.Label(top_frame, text="Seach :").pack(side='left')
-search = tk.Entry(top_frame, width=30)
-search.pack(side='left')
+
+search_entry = tk.Entry(top_frame, width=30)
+search_entry.pack(side='left')
+search_entry.bind('<Return>', my_search)
+
 search_bt = tk.Button(top_frame, text="search", padx=3,
                       pady=0, command=my_search)
-search_bt.pack(side='left')
-search.bind('<Return>', my_search)
+search_bt.pack(side='right')
+
+top_frame.pack(side="top")
+
+#Link Frame Entity
+g_link = tk.Label(link_frame, text="Google Translate", fg="blue", cursor="hand2")
+g_link.pack(side="right", anchor="e", padx=20)
+g_link.bind("<Button-1>", lambda e: callback("https://translate.google.com/?tl=ko&q=%s"%prv_text))
+
+p_link = tk.Label(link_frame, text="Papago", fg="blue", cursor="hand2")
+p_link.pack(side="right", anchor="e", padx=20)
+p_link.bind("<Button-1>", lambda e: callback("https://papago.naver.com/?sk=auto&tk=ko&st=%s"%prv_text))
+link_frame.pack(side="bottom", anchor="e")
 
 
+#Bottom Frame Entity
 org_label = tk.Label(bottom_frame, textvariable=org_txt, padx=20, pady=15)
 org_label.pack()
 trans_label = tk.Label(bottom_frame, textvariable=trans_txt, padx=20, pady=15,
                        font='굴림 11 bold')
 trans_label.pack(side="bottom")
+
+bottom_frame.pack(side="bottom")
+
+
+
 prv_text = ""
 
 myre= re.compile(r'[^A-Za-z0-9가-힣\'\"\(\)\[\]\{\}\,\.\/\:\?\!\~\`\*\&\^\%\$\#\@\-\_\=\+\<\>\\\| \t]')
@@ -123,7 +148,7 @@ def GetClip():
             text = re.sub('\n', ' ', text)
             text = re.sub('\"', '\\\"', text)
             text = myre.sub('', text)
-            if(re.search("\s", text)):
+            if re.search(r"\s", text):
                 set_trans(text)
             else:
                 set_dict(text)
