@@ -29,7 +29,6 @@ def callback(url):
 def my_search(event=None):
     pyperclip.copy(search_entry.get())
 
-
 def CutLongString(text, mylen=100):
     cnt = 0
     new_line = ""
@@ -45,21 +44,16 @@ def CutLongString(text, mylen=100):
 
     return new_line
 
-
-# def GoogleTrans2(text, dest):
-#     return "none"
-
-def papago(text, dest):
+def papago(text, src='en', dst='ko'):
     # translator = pypapago.Translator()
     translator = Translator()
-    result = translator.translate(text, source='en', target=dest)
+    result = translator.translate(text, source=src, target=dst)
     return result
 
-# def GoogleTrans(text, dest):
+# def GoogleTrans(text, dst):
 #     translator = Translator(service_urls=['translate.google.com'])
-#     trans_text = translator.translate(text, dest=dest).text
+#     trans_text = translator.translate(text, dst=dst).text
 #     return trans_text
-
 
 def search_daum_dic(query_keyword):
     dic_url = """http://dic.daum.net/search.do?q={0}"""
@@ -70,11 +64,10 @@ def search_daum_dic(query_keyword):
     return text
 
 
-def set_trans(text):
+def set_trans(text, src='en', dst='ko'):
     # trans_text = GoogleTrans(text, 'ja')
     # trans_text = GoogleTrans(text, 'ko')
-    # trans_text = GoogleTrans2(text, 'ko')
-    trans_text = papago(text, 'ko')
+    trans_text = papago(text, src=src, dst=dst)
     trans_text = CutLongString(trans_text, 50)
 
     search_entry.delete(0, 'end')
@@ -90,6 +83,10 @@ def set_dict(text):
     org_txt.set(text)
     trans_txt.set(trans_text)
 
+def check_ko(text):
+    regex = re.compile('[가-힣]')
+    result = regex.search(text)
+    return result
 
 window    = tk.Tk()
 org_txt   = tk.StringVar(value="Google Translate")
@@ -132,12 +129,9 @@ trans_label.pack(side="bottom")
 
 bottom_frame.pack(side="bottom")
 
-
-
 prv_text = ""
 
 myre= re.compile(r'[^A-Za-z0-9가-힣\'\"\(\)\[\]\{\}\,\.\/\:\?\!\~\`\*\&\^\%\$\#\@\-\_\=\+\<\>\\\| \t]')
-
 def GetClip():
     global window, prv_text, trans_txt
     text = pyperclip.paste()
@@ -149,7 +143,10 @@ def GetClip():
             text = re.sub('\"', '\\\"', text)
             text = myre.sub('', text)
             if re.search(r"\s", text):
-                set_trans(text)
+                if check_ko(text):
+                    set_trans(text, src='ko', dst='en')
+                else:
+                    set_trans(text)
             else:
                 set_dict(text)
 
@@ -162,7 +159,6 @@ def GetClip():
             # print("Unexpected error:", sys.exc_info()[0])
             print("Error")
             # raise
-
         
     window.after(500, GetClip)
 
