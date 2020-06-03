@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # ==================================================================================================
 # Filename      : CopyTrans.py
 # Author        : seongmock
@@ -11,10 +11,9 @@
 # ==================================================================================================
 #
 #
-# import sys
 import re
-import pyperclip
 import time
+from sys import exc_info
 import tkinter as tk
 from html import escape
 from pypapago import Translator
@@ -23,150 +22,183 @@ from requests import get
 from bs4 import BeautifulSoup
 import webbrowser
 
-def callback(url):
-    webbrowser.open_new(url)
+class CopyTrans(tk.Tk):
+    def __init__(self):
+        super().__init__()
 
-def my_search(event=None):
-    pyperclip.copy(search_entry.get())
+        #Variable
+        self.clip_text  = ""
+        self.trans_text = ""
+        self.trans_dst  = "ko"
+        self.trans_src  = "en"
+        self.SV_clip    = tk.StringVar(value="Google Translate")
 
-def CutLongString(text, mylen=100):
-    cnt = 0
-    new_line = ""
-    for char in text:
-        if(char == '\n'):
-            cnt = 0
-        elif(cnt == mylen):
-            cnt = 0
-            new_line = new_line + '\n'
-        else:
-            cnt += 1
-        new_line = new_line + char
+        #Main Window
+        self.minsize(500, 80)
+        self.resizable(False, False)
+        self.title("CopyTrans - BBOM & YOO")
 
-    return new_line
+        # Frame
+        self.frame0 = tk.Frame(self, pady=10)
+        self.frame1 = tk.Frame(self)
+        self.frame2 = tk.Frame(self)
+        self.frame0.pack()
+        self.frame1.pack(fill='both')
+        self.frame2.pack(fill='both')
 
-def papago(text, src='en', dst='ko'):
-    # translator = pypapago.Translator()
-    translator = Translator()
-    result = translator.translate(text, source=src, target=dst)
-    return result
+        # Frame0
+        # Label
+        self.L_search = tk.Label(self.frame0, text="Search :")
+        self.L_search.pack(side="left")
+        # Entry
+        self.E_search = tk.Entry(self.frame0, width=40)
+        self.E_search.pack(side="left")
+        self.E_search.bind('<Return>', self.manual_search)
+        # Button
+        self.B_search = tk.Button(
+            self.frame0, text="Search", padx=3, pady=0, command=self.manual_search)
+        self.B_search.pack(side='right')
 
-# def GoogleTrans(text, dst):
-#     translator = Translator(service_urls=['translate.google.com'])
-#     trans_text = translator.translate(text, dst=dst).text
-#     return trans_text
+        # Frame1
+        self.L_clip = tk.Label(
+            self.frame1, textvariable=self.SV_clip, padx=20, pady=15)
+        self.L_clip.pack()
+        self.T_trans  = tk.Text(self.frame1, font='굴림 11 bold'
+                        , bg=self.frame1.cget("bg"), relief="flat", borderwidth=0)
+        self.T_trans.tag_configure('tag-center', justify='center')
+        self.T_trans.configure(state="normal", height=5)
+        self.T_trans.pack(side="bottom")
 
-def search_daum_dic(query_keyword):
-    dic_url = """http://dic.daum.net/search.do?q={0}"""
-    r = get(dic_url.format(query_keyword))
-    soup = BeautifulSoup(r.text, "html.parser")
-    result_means = soup.find_all(attrs={'class': 'list_search'})
-    text = result_means[0].get_text().strip()
-    return text
-
-
-def set_trans(text, src='en', dst='ko'):
-    # trans_text = GoogleTrans(text, 'ja')
-    # trans_text = GoogleTrans(text, 'ko')
-    trans_text = papago(text, src=src, dst=dst)
-    trans_text = CutLongString(trans_text, 50)
-
-    search_entry.delete(0, 'end')
-    search_entry.insert(0, text)
-    org_txt.set(CutLongString(re.sub('\\\"', '\"', text)))
-    trans_txt.set(trans_text)
-
-
-def set_dict(text):
-    trans_text = search_daum_dic(text)
-    search_entry.delete(0, 'end')
-    search_entry.insert(0, text)
-    org_txt.set(text)
-    trans_txt.set(trans_text)
-
-def check_ko(text):
-    regex = re.compile('[가-힣]')
-    result = regex.search(text)
-    return result
-
-window    = tk.Tk()
-org_txt   = tk.StringVar(value="Google Translate")
-trans_txt = tk.StringVar(value="Google Translate")
-
-top_frame    = tk.Frame(window, pady=10)
-bottom_frame = tk.Frame(window)
-link_frame   = tk.Frame(window)
-
-#TOP Frame Entity
-tk.Label(top_frame, text="Seach :").pack(side='left')
-
-search_entry = tk.Entry(top_frame, width=30)
-search_entry.pack(side='left')
-search_entry.bind('<Return>', my_search)
-
-search_bt = tk.Button(top_frame, text="search", padx=3,
-                      pady=0, command=my_search)
-search_bt.pack(side='right')
-
-top_frame.pack(side="top")
-
-#Link Frame Entity
-g_link = tk.Label(link_frame, text="Google Translate", fg="blue", cursor="hand2")
-g_link.pack(side="right", anchor="e", padx=20)
-g_link.bind("<Button-1>", lambda e: callback("https://translate.google.com/?tl=ko&q=%s"%prv_text))
-
-p_link = tk.Label(link_frame, text="Papago", fg="blue", cursor="hand2")
-p_link.pack(side="right", anchor="e", padx=20)
-p_link.bind("<Button-1>", lambda e: callback("https://papago.naver.com/?sk=auto&tk=ko&st=%s"%prv_text))
-link_frame.pack(side="bottom", anchor="e")
-
-
-#Bottom Frame Entity
-org_label = tk.Label(bottom_frame, textvariable=org_txt, padx=20, pady=15)
-org_label.pack()
-trans_label = tk.Label(bottom_frame, textvariable=trans_txt, padx=20, pady=15,
-                       font='굴림 11 bold')
-trans_label.pack(side="bottom")
-
-bottom_frame.pack(side="bottom")
-
-prv_text = ""
-
-myre= re.compile(r'[^A-Za-z0-9가-힣\'\"\(\)\[\]\{\}\,\.\/\:\?\!\~\`\*\&\^\%\$\#\@\-\_\=\+\<\>\\\| \t]')
-def GetClip():
-    global window, prv_text, trans_txt
-    text = pyperclip.paste()
-    if(prv_text != text):
-        prv_text = text
-        try:
-            text = text.strip()
-            text = re.sub('\n', ' ', text)
-            text = re.sub('\"', '\\\"', text)
-            text = myre.sub('', text)
-            if re.search(r"\s", text):
-                if check_ko(text):
-                    set_trans(text, src='ko', dst='en')
-                else:
-                    set_trans(text)
-            else:
-                set_dict(text)
-
-            window.update()
-            window.deiconify()
-            window.attributes("-topmost", True)
-            window.attributes("-topmost", False)
-
-        except:
-            # print("Unexpected error:", sys.exc_info()[0])
-            print("Error")
-            # raise
+        #Frame2
+        self.L_google = tk.Label(self.frame2, text="Google Translate", fg="blue", cursor="hand2")
+        self.L_google.bind("<Button-1>", self.open_google)
+        self.L_google.pack(side="right", anchor="e", padx=20)
         
-    window.after(500, GetClip)
+
+        self.L_papago = tk.Label(self.frame2, text="Papago", fg="blue", cursor="hand2")
+        self.L_papago.bind("<Button-1>", self.open_papago )
+        self.L_papago.pack(side="right", anchor="e", padx=20)
+
+        #Check Iteration
+        self.after(500, self.check_clip)
+
+    def check_clip(self):
+        try:
+            new_clip = self.clipboard_get()
+            if (self.clip_text != new_clip):
+                self.set_clip_text(new_clip)
+            
+                escaped_text = self.escape_text(self.clip_text)
+                if re.search(r'\s', escaped_text):
+                    self.translate(escaped_text)
+                else:
+                    self.dictonray(escaped_text)
+        except:
+            print("Unexpected error:", exc_info()[0]) 
+
+
+        self.after(500, self.check_clip)
+
+    def set_clip_text(self, text):
+        if self.check_ko(text):
+            self.trans_dst="en"
+            self.trans_src="ko"
+        else:
+            self.trans_dst="ko"
+            self.trans_src="en"
+        self.clip_text = text
+    def set_E_search(self, text):
+        self.E_search.delete(0, 'end')
+        self.E_search.insert(0, text)
+
+    def set_T_trans(self, text):
+        line_cnt = text.count('\n')
+        self.T_trans.configure(state="normal", height=(line_cnt+1), borderwidth=0)
+        
+        self.T_trans.delete(0.0,'end')
+        self.T_trans.insert(1.0, text, 'tag-center')
+
+    def check_ko(self, text):
+        regex = re.compile('[가-힣]')
+        result = regex.search(text)
+        return result
+    def escape_text(self, text):
+        text = re.sub('\n','\\\\n', text)
+        text = re.sub('\"', '\\\"', text)
+        regex = re.compile(r'[^A-Za-z0-9가-힣\'\"\(\)\[\]\{\}\,\.\/\:\?\!\~\`\*\&\^\%\$\#\@\-\_\=\+\<\>\\\| \t]')
+        text = regex.sub('', text)
+        return text
+    def unescape_text(self, text):
+        text = re.sub(r'\\n',r'\n', text)
+        text = re.sub(r'\\"', r'"', text)
+        regex = re.compile(r'[^A-Za-z0-9가-힣\'\"\(\)\[\]\{\}\,\.\/\:\?\!\~\`\*\&\^\%\$\#\@\-\_\=\+\<\>\\\| \t]')
+        text = regex.sub('', text)
+        return text
+    
+    def CutLongString(self, text, mylen=80):
+        cnt = 0
+        new_line = ""
+        for char in text:
+            if(char == '\n'):
+                cnt = 0
+            elif(cnt == mylen):
+                cnt = 0
+                new_line = new_line + '\n'
+            else:
+                cnt += 1
+            new_line = new_line + char
+
+        return new_line
+
+
+    #Event Function
+    def open_google(self, event=None):
+        url = "https://translate.google.com/?tl=%s&q=%s"%(self.trans_dst, self.clip_text)
+        webbrowser.open_new(url)
+    def open_papago(self, event=None):
+        url = "https://papago.naver.com/?sk=auto&tk=%s&st=%s"%(self.trans_dst, self.clip_text)
+        webbrowser.open_new(url)
+    def manual_search(self, event=None):
+        self.clipboard_clear()
+        self.clipboard_append(self.E_search.get())
+
+
+    #Web API
+    def papago(self, text, src='en', dst='ko'):
+        # translator = pypapago.Translator()
+        translator = Translator()
+        result = translator.translate(text, source=src, target=dst)
+        return result
+
+    # def GoogleTrans(text, dst):
+    #     translator = Translator(service_urls=['translate.google.com'])
+    #     trans_text = translator.translate(text, dst=dst).text
+    #     return trans_text
+
+    def search_daum_dic(self, query_keyword):
+        dic_url = """http://dic.daum.net/search.do?q={0}"""
+        r = get(dic_url.format(query_keyword))
+        soup = BeautifulSoup(r.text, "html.parser")
+        result_means = soup.find_all(attrs={'class': 'list_search'})
+        text = result_means[0].get_text().strip()
+        return text
+
+
+    def translate(self, text):
+        self.trans_text = self.papago(text, src=self.trans_src, dst=self.trans_dst)
+        self.trans_text = self.CutLongString(self.trans_text, 70)
+
+        self.set_E_search(text)
+        self.SV_clip.set(self.CutLongString(self.unescape_text(text)))
+        self.set_T_trans(self.trans_text)
+
+    def dictonray(self, text):
+        self.trans_text = self.search_daum_dic(text)
+        self.set_E_search(text)
+        self.SV_clip.set(text)
+        self.set_T_trans(self.trans_text)
 
 
 if __name__ == "__main__":
-    window.minsize(500, 80)
-    window.resizable(False, False)
-    window.title("Google Translate - BBOMI KIM")
-
-    window.after(500, GetClip)
-    window.mainloop()
+    app = CopyTrans()
+    app.mainloop()
