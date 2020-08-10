@@ -16,11 +16,13 @@ import time
 from sys import exc_info
 import tkinter as tk
 from html import escape
-from pypapago import Translator
+# from pypapago import Translator
 # from googletrans import Translator
 from requests import get
 from bs4 import BeautifulSoup
 import webbrowser
+import urllib.request
+import json
 
 class CopyTrans(tk.Tk):
     def __init__(self):
@@ -166,8 +168,23 @@ class CopyTrans(tk.Tk):
     #Web API
     def papago(self, text, src='en', dst='ko'):
         # translator = pypapago.Translator()
-        translator = Translator()
-        result = translator.translate(text, source=src, target=dst)
+        # translator = Translator()
+        # result = translator.translate(text, source=src, target=dst)
+        client_id = "p1AhtSWDfF_A_ltcjJfm" # 개발자센터에서 발급받은 Client ID 값
+        client_secret = "" # 개발자센터에서 발급받은 Client Secret 값
+        encText = urllib.parse.quote(text)
+        data = "source=%s&target=%s&text="%(src, dst) + encText
+        url = "https://openapi.naver.com/v1/papago/n2mt"
+        request = urllib.request.Request(url)
+        request.add_header("X-Naver-Client-Id",client_id)
+        request.add_header("X-Naver-Client-Secret",client_secret)
+        response = urllib.request.urlopen(request, data=data.encode("utf-8"))
+        rescode = response.getcode()
+        if(rescode==200):
+            response_body = response.read()
+            result = json.loads(response_body)['message']['result']['translatedText']
+        else:
+            print("Error Code:" + rescode)
         return result
 
     # def GoogleTrans(text, dst):
