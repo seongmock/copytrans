@@ -33,7 +33,7 @@ class CopyTrans(tk.Tk):
         self.trans_text = ""
         self.trans_dst  = "ko"
         self.trans_src  = "en"
-        self.SV_clip    = tk.StringVar(value="Google Translate")
+        self.SV_clip    = tk.StringVar(value="CopyTrans")
 
         #Main Window
         self.minsize(500, 80)
@@ -203,7 +203,7 @@ class CopyTrans(tk.Tk):
 
     def translate(self, text):
         self.trans_text = self.papago(text, src=self.trans_src, dst=self.trans_dst)
-        self.trans_text = self.CutLongString(self.trans_text, 70)
+        self.trans_text = self.CutLongString(self.trans_text, 50)
 
         self.set_E_search(text)
         self.SV_clip.set(self.CutLongString(self.unescape_text(text)))
