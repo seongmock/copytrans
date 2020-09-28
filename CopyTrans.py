@@ -95,6 +95,11 @@ class CopyTrans(tk.Tk):
                     self.translate(escaped_text)
                 else:
                     self.dictonray(escaped_text)
+                
+                self.update()
+                self.deiconify()
+                self.attributes("-topmost", True)
+                self.attributes("-topmost", False)
         except:
             print("Unexpected error:", exc_info()[0]) 
 
